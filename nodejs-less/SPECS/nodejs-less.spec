@@ -2,7 +2,8 @@
 
 Name:           nodejs-less
 Version:        1.7.0
-Release:        2%{?dist}
+%define dn_release .1.dn
+Release:        2%{?dn_release}%{?dist}
 Summary:        Less.js The dynamic stylesheet language
 
 # cssmin.js is licensed under BSD license
@@ -15,6 +16,7 @@ Source0: http://registry.npmjs.org/less/-/less-%{version}.tgz
 # Since we're installing this in a global location, fix the require()
 # calls to point there.
 Patch0001: 0001-Require-include-files-from-the-default-location.patch
+Patch0002: 0002-lessc-util.print-has-been-deprecated.v2.patch
 
 BuildArch:      noarch
 BuildRequires:  nodejs-devel
@@ -35,6 +37,7 @@ and server-side, with Node.js and Rhino.
 %setup -q -n package
 
 %patch0001 -p1
+%patch0002 -p1
 
 # Remove pre-built files from the dist/ directory
 rm -f dist/*.js
@@ -68,6 +71,9 @@ ln -s %{nodejs_sitelib}/less/bin/lessc \
 
 
 %changelog
+* Mon Feb 21 2022 Desnes Nunes <desnesn@linux.ibm.com> - [1.7.0-2.1.dn]:
+- beaker: dn: lessc: util.print() has been deprecated (Desnes Nunes)
+
 * Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.7.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 

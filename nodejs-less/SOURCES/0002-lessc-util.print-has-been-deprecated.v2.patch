@@ -1,0 +1,87 @@
+From 51fe1a2d74e1d8f390445a640ac21a994bf10722 Mon Sep 17 00:00:00 2001
+From: "Desnes A. Nunes do Rosario" <desnesn@br.ibm.com>
+Date: Fri, 18 Feb 2022 16:56:06 -0500
+Subject: [PATCH] beaker: dn: lessc: util.print() has been deprecated
+
+https://nodejs.org/api/deprecations.html#DEP0026
+
+Fixes the following error:
+~~~
+Feb 18 13:33:56 foobar beaker-server[13664]: FilterError: less: subprocess returned a non-success result code: 2, stdout=, stderr=(node:13936) [DEP0128] DeprecationWarning: Invalid 'main' field in '/usr/lib/node_modules/less/package.json' of './lib/less/index'. Please either fix that or report it to the module author
+Feb 18 13:33:56 foobar beaker-server[13664]: (Use `node --trace-deprecation ...` to show where the warning was created)
+Feb 18 13:33:56 foobar beaker-server[13664]: #033[31mTypeError: sys.print is not a function
+Feb 18 13:33:56 foobar beaker-server[13664]:     at /usr/lib/node_modules/less/bin/lessc:386:29
+Feb 18 13:33:56 foobar beaker-server[13664]:     at tree.importVisitor.finish [as _finish] (/usr/lib/node_modules/less/parser.js:669:28)
+Feb 18 13:33:56 foobar beaker-server[13664]:     at tree.importVisitor.subFinish [as _finish] (/usr/lib/node_modules/less/import-visitor.js:84:47)
+Feb 18 13:33:56 foobar beaker-server[13664]:     at tree.importVisitor.subFinish [as _finish] (/usr/lib/node_modules/less/import-visitor.js:84:47)
+Feb 18 13:33:56 foobar beaker-server[13664]:     at tree.importVisitor.run (/usr/lib/node_modules/less/import-visitor.js:34:22)
+Feb 18 13:33:56 foobar beaker-server[13664]:     at /usr/lib/node_modules/less/import-visitor.js:96:38
+Feb 18 13:33:56 foobar beaker-server[13664]:     at fileParsedFunc (/usr/lib/node_modules/less/parser.js:82:17)
+Feb 18 13:33:56 foobar beaker-server[13664]:     at /usr/lib/node_modules/less/parser.js:105:29
+Feb 18 13:33:56 foobar beaker-server[13664]:     at finish (/usr/lib/node_modules/less/parser.js:669:28)
+Feb 18 13:33:56 foobar beaker-server[13664]:     at Object.parse (/usr/lib/node_modules/less/parser.js:677:24)#033[39m
+~~~
+
+Conflicts:
+* Backporting only what's on bin/lessc
+
+Upstream status: https://github.com/less/less.js/commit/1ff24b4c266783823a6971696b5ca5366e626463
+commit <1ff24b4c266783823a6971696b5ca5366e626463>
+Author: Luke Page <luke.a.page@gmail.com>
+Subject: do not use util.print since it is deprecated. Fixes #2081
+
+Signed-off-by: Desnes A. Nunes do Rosario <desnesn@br.ibm.com>
+Signed-off-by: Diego Domingos <diegodo@linux.vnet.ibm.com>
+---
+ bin/lessc | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/bin/lessc b/bin/lessc
+index 4c1efb2..2b858ad 100755
+--- a/bin/lessc
++++ b/bin/lessc
+@@ -2,7 +2,6 @@
+ 
+ var path = require('path'),
+     fs = require('fs'),
+-    sys = require('util'),
+     os = require('os'),
+     mkdirp;
+ 
+@@ -315,10 +314,10 @@ var ensureDirectory = function (filepath) {
+ 
+ if (options.depends) {
+     if (!outputbase) {
+-        sys.print("option --depends requires an output path to be specified");
++        console.log("option --depends requires an output path to be specified");
+         return;
+     }
+-    sys.print(outputbase + ": ");
++    process.stdout.write(outputbase + ": ");
+ }
+ 
+ if (!sourceMapFileInline) {
+@@ -349,9 +348,9 @@ var parseLessFile = function (e, data) {
+             return;
+         } else if (options.depends) {
+             for(var file in parser.imports.files) {
+-                sys.print(file + " ")
++                process.stdout.write(file + " ")
+             }
+-            sys.print("\n");
++            console.log("");
+         } else {
+             try {
+ 	        if (options.lint) { writeSourceMap = function() {} }
+@@ -383,7 +382,7 @@ var parseLessFile = function (e, data) {
+                             console.log('lessc: wrote ' + output);
+                         }
+                     } else {
+-                        sys.print(css);
++                        process.stdout.write(css);
+ 		    }
+ 		}
+             } catch (e) {
+-- 
+1.8.3.1
+
