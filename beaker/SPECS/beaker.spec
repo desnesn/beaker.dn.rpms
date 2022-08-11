@@ -19,7 +19,7 @@
 
 Name:           beaker
 Version:        28.2
-%define dn_release .1.dn
+%define dn_release .2.dn
 Release:        1%{?dn_release}%{?dist}
 Summary:        Full-stack software and hardware integration testing system
 Group:          Applications/Internet
@@ -61,6 +61,10 @@ Patch13: 0013-beaker-sles-Don-t-check-server-certificate-on-instal.patch
 Patch14: 0014-beaker-centostream-Introducing-centostream-support-T.patch
 Patch15: 0015-beaker-sles-remove-duplicate-information-on-beaker-h.patch
 Patch16: 0016-beaker-sles-Fix-sles-versions-setup-variables.patch
+Patch17: 0017-beaker-ubuntu-Add-Ubuntu-support.patch
+Patch18: 0018-beaker-ubuntu-Quote-kernel-arguments-in-grub.conf.patch
+Patch19: 0019-beaker-ubuntu-use-personal-logins-passwords-on-Ubunt.patch
+Patch20: 0020-beaker-ubuntu-adapt-test_netboot.py-to-ubuntu-s-semi.patch
 
 BuildArch:      noarch
 BuildRequires:  make
@@ -366,6 +370,10 @@ tar -C Server/assets/moment-duration-format --strip-components=1 -xzf %{SOURCE15
 %patch14 -p1
 %patch15 -p1
 %patch16 -p1
+%patch17 -p1
+%patch18 -p1
+%patch19 -p1
+%patch20 -p1
 
 %build
 export BKR_PY3=%{with python3}
@@ -389,6 +397,10 @@ ln -s /dev/null %{buildroot}%{_datadir}/bkr/server/assets/site.less
 # Export default SLES autoyast file on rpm
 mkdir -p $RPM_BUILD_ROOT%{python2_sitelib}/bkr/server/autoyasts
 cp Server/bkr/server/autoyasts/default $RPM_BUILD_ROOT%{python2_sitelib}/bkr/server/autoyasts/.
+
+# Export default Ubuntu autoinstall file on rpm
+mkdir -p $RPM_BUILD_ROOT%{python2_sitelib}/bkr/server/autoinstalls
+cp Server/bkr/server/autoinstalls/default $RPM_BUILD_ROOT%{python2_sitelib}/bkr/server/autoinstalls/.
 
 %check
 %if 0%{?rhel} >= 8
@@ -586,6 +598,12 @@ chmod go-w %{_localstatedir}/log/%{name}/*.log >/dev/null 2>&1 || :
 %endif
 
 %changelog
+* Mon May 09 2022 Desnes Nunes <desnesn@linux.ibm.com> - [28.2-1.2.dn]:
+- beaker: dn: ubuntu: adapt test_netboot.py to ubuntu's semicolon kernel options (Desnes Nunes)
+- beaker: dn: ubuntu: use personal logins/passwords on Ubuntu installs (Desnes Nunes)
+- beaker: dn: ubuntu: Quote kernel arguments in grub.conf (Paul Clarke)
+- beaker: dn: ubuntu: Add Ubuntu support (Paul Clarke)
+
 * Fri Apr 22 2022 Desnes Nunes <desnesn@linux.ibm.com> - [28.2-1.1.dn]:
 - beaker: dn: sles: Fix sles versions setup variables (Desnes Nunes)
 - beaker: dn: sles: remove duplicate information on beaker-harness-env.csh (Paul Clarke)

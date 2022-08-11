@@ -1,0 +1,33 @@
+From 5f631ddd32c19b972cfe5ab95a51cb054e0fc58c Mon Sep 17 00:00:00 2001
+From: Paul Clarke <pc@us.ibm.com>
+Date: Mon, 25 Apr 2022 22:13:45 -0300
+Subject: [PATCH 18/23] beaker: dn: ubuntu: Quote kernel arguments in grub.conf
+
+Kernel command-line arguments when passed in via grub.conf get truncated if
+they contain a semicolon. Ubuntu autoinstall command lines typically have
+one, as in "ds=nocloud-net;s=http://beaker[...]". There may be other
+characters which cause similar issues. GRUB allows arguments to be bracked by
+quotation marks, so use those unconditionally.
+
+Signed-off-by: Paul A. Clarke <pc@us.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@linux.ibm.com>
+---
+ LabController/src/bkr/labcontroller/netboot.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/LabController/src/bkr/labcontroller/netboot.py b/LabController/src/bkr/labcontroller/netboot.py
+index 1effe5c60..6b538836a 100644
+--- a/LabController/src/bkr/labcontroller/netboot.py
++++ b/LabController/src/bkr/labcontroller/netboot.py
+@@ -186,7 +186,7 @@ def configure_grub2(fqdn, default_config_loc,
+ initrd /images/%s/initrd
+ %s
+ boot
+-""" % (fqdn, kernel_options, fqdn, devicetree)
++""" % (fqdn, ' '.join (["'"+x+"'" for x in kernel_options.split()]), fqdn, devicetree)
+     with atomically_replaced_file(config_file) as f:
+         f.write(config)
+     # We also ensure a default config exists that exits
+-- 
+2.35.3
+

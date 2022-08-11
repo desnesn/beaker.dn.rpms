@@ -1,0 +1,180 @@
+From 1a00ba7ed3e7c470e3e907007b04d212a2e3bd45 Mon Sep 17 00:00:00 2001
+From: Paul Clarke <pc@us.ibm.com>
+Date: Mon, 25 Apr 2022 22:15:25 -0300
+Subject: [PATCH 17/23] beaker: dn: ubuntu: Add Ubuntu support
+
+- Add new directory, "autoinstalls", to host autoinstall templates,
+  akin to "kickstarts" and "autoyasts".
+- Add new "default" autoinstall template.
+- Allow for operating system version-specific autoinstall templates to
+  supercede "default".
+- Render autoinstall file from template.
+- Add "ds" (data source) and "url" (installation ISO URL) kernel options.
+- Add new "@app.route" paths for installation HTTPD server:
+  - user-data: rendered autoinstall file, based on template.
+  - meta-data: required file for autoinstalls (empty).
+  - vendor-data: optional file for autoinstalls (empty).
+- Disable unsupported "leavebootorder".
+
+Signed-off-by: Paul A. Clarke <pc@us.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@linux.ibm.com>
+---
+ Server/bkr/server/autoinstall.py         | 25 ++++++++++++++
+ Server/bkr/server/autoinstalls/default   | 42 ++++++++++++++++++++++++
+ Server/bkr/server/model/distrolibrary.py | 11 +++++--
+ Server/bkr/server/model/scheduler.py     | 14 ++++++++
+ 4 files changed, 90 insertions(+), 2 deletions(-)
+ create mode 100644 Server/bkr/server/autoinstalls/default
+
+diff --git a/Server/bkr/server/autoinstall.py b/Server/bkr/server/autoinstall.py
+index e18b6336a..4b6330a68 100644
+--- a/Server/bkr/server/autoinstall.py
++++ b/Server/bkr/server/autoinstall.py
+@@ -229,6 +229,12 @@ def installer_template(osmajor):
+             'autoyasts/%s' % osmajor.rstrip(string.digits),
+             'autoyasts/default',
+     ]
++    elif "Ubuntu" in osmajor:
++        candidates = [
++            'autoinstalls/%s' % osmajor,
++            'autoinstalls/%s' % osmajor.rstrip(string.digits),
++            'autoinstalls/default',
++        ]
+     else:
+         candidates = [
+             'kickstarts/%s' % osmajor,
+@@ -371,3 +377,22 @@ def get_kickstart(id):
+     return redirect(kickstart.url) if kickstart.url else Response(
+         kickstart.kickstart.encode('utf8'),
+         mimetype='text/plain')
++
++
++@app.route('/autoinstall/<id>/<file>', methods=['GET'])
++def get_autoinstall(id, file):
++    """
++    Flask endpoint for serving up generated kickstarts.
++    """
++    if file == "user-data":
++        try:
++            kickstart = RenderedKickstart.by_id(id)
++        except NoResultFound:
++            abort(404)
++        return redirect(kickstart.url) if kickstart.url else Response(
++            kickstart.kickstart.encode('utf8'),
++            mimetype='text/plain')
++    elif file in [ "meta-data", "vendor-data" ]:
++        return Response(''.encode('utf8'), mimetype='text/plain')
++    else:
++        abort(404)
+diff --git a/Server/bkr/server/autoinstalls/default b/Server/bkr/server/autoinstalls/default
+new file mode 100644
+index 000000000..c7edae847
+--- /dev/null
++++ b/Server/bkr/server/autoinstalls/default
+@@ -0,0 +1,42 @@
++#cloud-config
++autoinstall:
++  version: 1
++  identity:
++    hostname: {{ system.fqdn }}
++    password: "$6$exDY1mhS4KUYCE/2$zmn9ToZwTKLhCw.b4/b.ZRTIZM30JZ4QrOQ2aOXJ8yk96xpcCof0kxKwuX1kqLG/ygbJ1f8wxED22bTL4F46P0"
++    username: ubuntu
++  ssh:
++    install-server: true
++    allow-pw: true
++  early-commands:
++    - curl http://{{ lab_controller.fqdn }}:8000/install_start/{{ recipe.id }}
++    - bootlist -m normal -r > /bootlist.txt || true
++    #curl -O /tmp/anamon https://{{ lab_controller.fqdn }}/beaker/anamon3
++    #python3 /tmp/anamon --recipe-id {{ recipe.id }} --xmlrpc-url 'https://{{ lab_controller.fqdn }}/RPC2'
++    - curl -O http://{{ lab_controller.fqdn }}:8000/nopxe/{{ system.fqdn }}
++  late-commands:
++    - cp -p /autoinstall.yaml /target
++    # This should work, but "bootlist ... -r" is broken on Ubuntu 20.04, so must use "bootlist ... -o"
++    # bootlist -m normal -r $(ofpathname $(ip -brief -o addr show scope global | awk '{print $1}')) $(ofpathname $(df --output=source /target | tail -n1))
++    - bootlist -m normal -o $(ip -brief -o addr show scope global | awk '{print $1}') $(df --output=source /target | tail -n1) || true
++    - curtin in-target --target=/target -- hostnamectl --static set-hostname {{ system.fqdn }}
++    - echo {{ recipe.id }} > /target/root/RECIPE.TXT
++    - echo "export BEAKER_LAB_CONTROLLER_URL=\"http://{{ lab_controller.fqdn }}:8000\"" >>/target/etc/profile.d/beaker-harness-env.sh
++    - echo "export BEAKER_LAB_CONTROLLER={{ lab_controller.fqdn }}" >>/target/etc/profile.d/beaker-harness-env.sh
++    - echo "export BEAKER_RECIPE_ID={{ recipe.id }}" >>/target/etc/profile.d/beaker-harness-env.sh
++    - echo "export BEAKER_HUB_URL=\"https://{{ lab_controller.fqdn }}\"" >>/target/etc/profile.d/beaker-harness-env.sh
++    - echo "export RHTS_OPTION_COMPATIBLE=" >>/target/etc/profile.d/beaker-harness-env.sh
++    - echo "export RHTS_OPTION_COMPAT_SERVICE=" >>/target/etc/profile.d/beaker-harness-env.sh
++    - echo -n >/target/etc/profile.d/beaker.sh
++    - echo "export BEAKER=\"{{ absolute_url('/', labdomain=True) }}\"" >>/target/etc/profile.d/beaker.sh
++    - echo "export BEAKER_JOB_WHITEBOARD=''" >>/target/etc/profile.d/beaker.sh
++    - echo "export BEAKER_RECIPE_WHITEBOARD=''" >>/target/etc/profile.d/beaker.sh
++    - echo -n >/target/etc/profile.d/task-overrides-rhts.sh
++    - echo "export RHTS_OPTION_COMPATIBLE=">>/target/etc/profile.d/task-overrides-rhts.sh
++    - echo "export RHTS_OPTION_COMPAT_SERVICE=">>/target/etc/profile.d/task-overrides-rhts.sh
++    - echo "deb [allow-insecure=yes trusted=yes] http://FQDN/harness/{{ distro.osversion.osmajor }} /" >> /target/etc/apt/sources.list
++    - curtin in-target --target=/target -- apt update
++    - curtin in-target --target=/target -- apt install make restraint restraint-rhts
++    - curtin in-target --target=/target -- systemctl enable restraintd
++    - curl http://{{ lab_controller.fqdn }}:8000/postinstall_done/{{ recipe.id }}
++    - sleep 10
+diff --git a/Server/bkr/server/model/distrolibrary.py b/Server/bkr/server/model/distrolibrary.py
+index 7cad45a83..89dedb773 100644
+--- a/Server/bkr/server/model/distrolibrary.py
++++ b/Server/bkr/server/model/distrolibrary.py
+@@ -61,6 +61,12 @@ def default_install_options_for_distro(osmajor_name, osminor, variant, arch):
+         suse = (osmajor_name.split(" ",1)[0]).split("SUSELinuxEnterprise",1)[1]
+         suse_sp = version
+ 
++    ubuntu, ubuntu_version = False, False
++    ubuntu_like = ['Ubuntu']
++    if any(distro in name for distro in ubuntu_like):
++        ubuntu = name
++        ubuntu_version = str(version)
++
+     # We default to assuming all features are present, with features
+     # conditionally turned off if needed. That way, unrecognised custom
+     # distros will be assumed to support all features. The admin can
+@@ -96,7 +102,8 @@ def default_install_options_for_distro(osmajor_name, osminor, variant, arch):
+     # bootloader --leavebootorder
+     ks_meta['has_leavebootorder'] = True
+     if rhel in ('5', '6') or \
+-            (fedora and fedora != 'rawhide' and int(fedora) < 18):
++            (fedora and fedora != 'rawhide' and int(fedora) < 18) or \
++       ubuntu:
+         del ks_meta['has_leavebootorder']
+     # repo --cost
+     ks_meta['has_repo_cost'] = True
+@@ -184,7 +191,7 @@ def default_install_options_for_distro(osmajor_name, osminor, variant, arch):
+     # for s390, s390x and armhfp, we default to ''
+     kernel_options['netbootloader'] = netbootloader.get(arch.arch, '')
+     if arch.arch in ['ppc', 'ppc64', 'ppc64le']:
+-        if not suse:
++        if not (suse or ubuntu):
+             if rhel and int(rhel) < 9 or \
+                     (fedora and fedora != 'rawhide' and int(fedora) < 34):
+                 kernel_options['leavebootorder'] = None
+diff --git a/Server/bkr/server/model/scheduler.py b/Server/bkr/server/model/scheduler.py
+index 9ab2b1fab..d12db4456 100644
+--- a/Server/bkr/server/model/scheduler.py
++++ b/Server/bkr/server/model/scheduler.py
+@@ -2670,6 +2670,20 @@ def provision(self):
+                                                     install_template=kickstart,
+                                                     no_template=no_ks_template)
+             install_options.kernel_options[auto_installer] = rendered_kickstart.link
++        elif "Ubuntu" in str(self.distro_tree.distro.osversion.osmajor):
++            auto_installer = "autoinstall"
++            kickstart = self.kickstart
++            rendered_kickstart = generate_autoinstall(install_options=install_options,
++                                                    distro_tree=self.distro_tree,
++                                                    system=getattr(self.resource, 'system', None),
++                                                    user=self.recipeset.job.owner,
++                                                    recipe=self,
++                                                    ks_appends=ks_appends,
++                                                    install_template=kickstart,
++                                                    no_template=no_ks_template)
++            install_options.kernel_options[auto_installer] = None
++            install_options.kernel_options['ds'] = "nocloud-net;s=%s/" % rendered_kickstart.link.replace('kickstart',auto_installer)
++            install_options.kernel_options['url'] = "http://%s/ubuntu_images/%s.iso" % (self.recipeset.lab_controller.fqdn, self.distro_tree.distro.name)
+         else:
+             if self.kickstart and not no_ks_template:
+                 # add in cobbler packages snippet...
+-- 
+2.35.3
+
