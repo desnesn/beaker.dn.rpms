@@ -5,6 +5,9 @@ Repo to track DN's downstream rebuilds of beaker packages.
 Original src rpms:
 * https://beaker-project.org/yum/server/RedHatEnterpriseLinux7/
 
+Beaker DN's code repository:
+* https://github.com/desnesn/beaker.dn
+
 ## 1.0 BUILD ENV SETUP
 
 ~~~
@@ -14,6 +17,23 @@ sudo yum -y install rpm-build
 sudo yum -y install python-mock python2-devel python2-gevent112 python-docutils python-sphinx python-sphinxcontrib-httpdomain pkgconfig\(bash-completion\)
 sudo yum -y install nodejs-devel nodejs-packaging nodejs-grunt-cli
 sudo yum -y install python-greenlet libev
+~~~
+
+## 2.0 BEAKER RPMS BUILD
+~~~
+echo "%_topdir ~/beaker.dn.rpms/beaker" > ~/.rpmmacros
+
+git clone git@github.com:desnesn/beaker.dn.rpms.git ~/beaker.dn.rpms.git
+cd ~/beaker.dn.rpms/beaker
+
+rpmbuild -ba SPECS/beaker.spec
+~~~
+
+##### 2.1 BEAKER REPO COMMIT
+~~~
+git add beaker/SOURCES/*patch beaker/SPECS/beaker.spec beaker/SRPMS/*
+
+git commit -s -m "beaker: dn: build beaker-28.2-1.<X>.dn.el7"
 ~~~
 
 ## 3.0 NODEJS-LESS RPMS BUILD
