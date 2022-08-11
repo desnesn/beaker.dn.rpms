@@ -1,0 +1,42 @@
+From 08e9b0a691f32f71eab3720b2ade59af19d8178c Mon Sep 17 00:00:00 2001
+From: Desnes Nunes <desnesn@linux.ibm.com>
+Date: Tue, 26 Jul 2022 14:36:16 -0300
+Subject: [PATCH 23/23] beaker: dn: ubuntu: Fix ssh keys support on Ubuntu installs
+
+This fixes lack of ssh keys on Ubuntu Beaker installations
+
+Signed-off-by: Paul A. Clarke <pc@us.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@linux.ibm.com>
+---
+ Server/bkr/server/autoinstalls/default | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/Server/bkr/server/autoinstalls/default b/Server/bkr/server/autoinstalls/default
+index 88436b859..4e862036c 100644
+--- a/Server/bkr/server/autoinstalls/default
++++ b/Server/bkr/server/autoinstalls/default
+@@ -20,6 +20,21 @@ autoinstall:
+     # bootlist -m normal -r $(ofpathname $(ip -brief -o addr show scope global | awk '{print $1}')) $(ofpathname $(df --output=source /target | tail -n1))
+     - /usr/sbin/bootlist -m normal -o $(/usr/sbin/ip -brief -o addr show scope global | /usr/bin/awk '{print $1}') $(/usr/bin/lsblk --raw --inverse --output=NAME $(/usr/bin/df --output=source /target/boot/ | /usr/bin/tail -n1) | /usr/bin/tail -n1) || true
+     - curtin in-target --target=/target -- /usr/bin/hostnamectl --static set-hostname {{ system.fqdn }}
++{% if user.sshpubkeys or recipe and recipe.recipeset.job.group %}
++    - mkdir -p /target/root/.ssh
++{% if recipe and recipe.recipeset.job.group %}
++{% for user in recipe.recipeset.job.group.users %}
++{% for ssh_key in user.sshpubkeys %}
++    - echo "{{ ssh_key|string|replace('__EOF__', '') }}" >> /target/root/.ssh/authorized_keys
++{% endfor %}
++{% endfor %}
++{% else %}
++{% for ssh_key in user.sshpubkeys %}
++    - echo "{{ ssh_key|string|replace('__EOF__', '') }}" >> /target/root/.ssh/authorized_keys
++{% endfor %}
++{% endif %}
++    - chmod go-w /target/root /target/root/.ssh /target/root/.ssh/authorized_keys
++{% endif %}
+     - echo {{ recipe.id }} > /target/root/RECIPE.TXT
+     - echo "export BEAKER_LAB_CONTROLLER_URL=\"http://{{ lab_controller.fqdn }}:8000\"" >>/target/etc/profile.d/beaker-harness-env.sh
+     - echo "export BEAKER_LAB_CONTROLLER={{ lab_controller.fqdn }}" >>/target/etc/profile.d/beaker-harness-env.sh
+-- 
+2.35.3
+

@@ -19,7 +19,7 @@
 
 Name:           beaker
 Version:        28.2
-%define dn_release .4.dn
+%define dn_release .5.dn
 Release:        1%{?dn_release}%{?dist}
 Summary:        Full-stack software and hardware integration testing system
 Group:          Applications/Internet
@@ -67,6 +67,7 @@ Patch19: 0019-beaker-ubuntu-use-personal-logins-passwords-on-Ubunt.patch
 Patch20: 0020-beaker-ubuntu-adapt-test_netboot.py-to-ubuntu-s-semi.patch
 Patch21: 0021-beaker-ubuntu-fix-harness-address-and-download-CA-cr.patch
 Patch22: 0022-beaker-ubuntu-enabling-Ubuntu-22.04.patch
+Patch23: 0023-beaker-ubuntu-Fix-ssh-keys-support-on-Ubuntu-install.patch
 
 BuildArch:      noarch
 BuildRequires:  make
@@ -378,6 +379,7 @@ tar -C Server/assets/moment-duration-format --strip-components=1 -xzf %{SOURCE15
 %patch20 -p1
 %patch21 -p1
 %patch22 -p1
+%patch23 -p1
 
 %build
 export BKR_PY3=%{with python3}
@@ -602,6 +604,9 @@ chmod go-w %{_localstatedir}/log/%{name}/*.log >/dev/null 2>&1 || :
 %endif
 
 %changelog
+* Tue Jul 26 2022 Desnes Nunes <desnesn@linux.ibm.com> - [28.2-1.5.dn]:
+- beaker: dn: ubuntu: Fix ssh keys support on Ubuntu installs (Paul Clarke)
+
 * Mon May 30 2022 Desnes Nunes <desnesn@linux.ibm.com> - [28.2-1.4.dn]:
 - beaker: dn: ubuntu: enabling Ubuntu 22.04 (Paul Clarke)
 
