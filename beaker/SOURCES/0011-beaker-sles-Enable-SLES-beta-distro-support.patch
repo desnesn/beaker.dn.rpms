@@ -1,0 +1,52 @@
+From c6a22f52abf51bee4366b5daeb5fae6c91e2f709 Mon Sep 17 00:00:00 2001
+From: Desnes Nunes <desnesn@linux.ibm.com>
+Date: Mon, 18 Apr 2022 19:40:11 -0300
+Subject: [PATCH 11/23] beaker: dn: sles: Enable SLES beta distro support
+
+An update on the default autoyast is necessary to support non GA versions
+of SLES, such as the beta versions.
+
+Furthermore, the README.BETA file must be always changed at the imported
+distro repository at the controller:
+
+$ mv /data/www/sles_images/<RELEASE>/README.BETA /data/www/sles_images/<RELEASE>/NON-README.BETA
+
+Requested-by: Debora Velarde Babb <debora@linux.ibm.com>
+Signed-off-by: Diego Domingos <diegodo@linux.vnet.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@br.ibm.com>
+---
+ Server/bkr/server/autoyasts/default | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Server/bkr/server/autoyasts/default b/Server/bkr/server/autoyasts/default
+index e0bfabd17..66169d9e7 100644
+--- a/Server/bkr/server/autoyasts/default
++++ b/Server/bkr/server/autoyasts/default
+@@ -307,7 +307,6 @@
+ 				# TODO: fix https in the future
+ 				zypper addrepo -G {{ absolute_url('/', labdomain=True).replace("https","http") }}repos/{{ recipe.id }} beaker-tasks
+ 				zypper addrepo -G "{{ absolute_url('/', labdomain=True).replace("https","http") }}harness/{{ distro.osversion.osmajor }}" harness
+-				zypper addrepo -G http://{{ lab_controller.fqdn }}/sles_images/{{ distro_tree.distro.name }}/Module-Python2 module-python2
+ 				zypper addrepo -G http://{{ lab_controller.fqdn }}/sles_images/{{ distro_tree.distro.name }}/Module-Development-Tools module-development-tools
+ 				zypper refresh
+ 
+@@ -489,6 +488,7 @@
+     <ask-list config:type="list"/>
+     <mode>
+       <confirm config:type="boolean">false</confirm>
++      <confirm_base_product_license config:type="boolean">false</confirm_base_product_license>
+     </mode>
+     <proposals config:type="list"/>
+     <signature-handling>
+@@ -873,7 +873,7 @@
+   <report>
+     <errors>
+       <log config:type="boolean">true</log>
+-      <show config:type="boolean">true</show>
++      <show config:type="boolean">false</show>
+       <timeout config:type="integer">0</timeout>
+     </errors>
+     <messages>
+-- 
+2.35.3
+

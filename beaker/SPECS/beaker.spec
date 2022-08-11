@@ -19,7 +19,8 @@
 
 Name:           beaker
 Version:        28.2
-Release:        1%{?dist}
+%define dn_release .1.dn
+Release:        1%{?dn_release}%{?dist}
 Summary:        Full-stack software and hardware integration testing system
 Group:          Applications/Internet
 License:        GPLv2+ and BSD
@@ -44,6 +45,22 @@ Source12:        https://github.com/ifightcrime/bootstrap-growl/archive/eba6d768
 Source13:       https://github.com/eternicode/bootstrap-datepicker/archive/b374f23971817d507bded0dc16892e87a6d2fe42/bootstrap-datepicker-b374f23971817d507bded0dc16892e87a6d2fe42.tar.gz
 Source14:       https://github.com/chjj/marked/archive/2b5802f258c5e23e48366f2377fbb4c807f47658/marked-2b5802f258c5e23e48366f2377fbb4c807f47658.tar.gz
 Source15:       https://github.com/jsmreese/moment-duration-format/archive/8d0bf29a1eab180cb83d0f13f93f6974faedeafd/moment-duration-format-8d0bf29a1eab180cb83d0f13f93f6974faedeafd.tar.gz
+
+Patch2: 0002-beaker-powerpc-Add-PowerVM-hypervisor-and-obmcutil-P.patch
+Patch3: 0003-beaker-fedora-Don-t-disable-Fedora-repos-on-IBM.patch
+Patch4: 0004-beaker-sles-Introducing-SLES-support-on-Beaker.patch
+Patch5: 0005-beaker-sles-Fix-missing-self.kickstart-clause.patch
+Patch6: 0006-beaker-sles-Fix-kickstart-autoyast-flags-setup-for-s.patch
+Patch7: 0007-beaker-sles-Enable-SLES15-SP3-support-on-powerpc.patch
+Patch8: 0008-beaker-sles-Fix-bug-of-SLES-breaking-the-disk-s-boot.patch
+Patch9: 0009-beaker-sles-Set-system-s-FQDN-on-SLES-installations.patch
+Patch10: 0010-beaker-sles-Add-Module-Development-Tools-repo-to-SLE.patch
+Patch11: 0011-beaker-sles-Enable-SLES-beta-distro-support.patch
+Patch12: 0012-beaker-s390x-Add-zVM-hypervisor-and-zvm_jst-Power-ty.patch
+Patch13: 0013-beaker-sles-Don-t-check-server-certificate-on-instal.patch
+Patch14: 0014-beaker-centostream-Introducing-centostream-support-T.patch
+Patch15: 0015-beaker-sles-remove-duplicate-information-on-beaker-h.patch
+Patch16: 0016-beaker-sles-Fix-sles-versions-setup-variables.patch
 
 BuildArch:      noarch
 BuildRequires:  make
@@ -334,6 +351,22 @@ tar -C Server/assets/bootstrap-datepicker --strip-components=1 -xzf %{SOURCE13}
 tar -C Server/assets/marked --strip-components=1 -xzf %{SOURCE14}
 tar -C Server/assets/moment-duration-format --strip-components=1 -xzf %{SOURCE15}
 
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
+%patch14 -p1
+%patch15 -p1
+%patch16 -p1
+
 %build
 export BKR_PY3=%{with python3}
 make
@@ -352,6 +385,10 @@ DESTDIR=%{buildroot} make install
 # and therefore is not included in the RPM. Seems like an RPM bug...
 ln -s /dev/null %{buildroot}%{_datadir}/bkr/server/assets/site.less
 %endif
+
+# Export default SLES autoyast file on rpm
+mkdir -p $RPM_BUILD_ROOT%{python2_sitelib}/bkr/server/autoyasts
+cp Server/bkr/server/autoyasts/default $RPM_BUILD_ROOT%{python2_sitelib}/bkr/server/autoyasts/.
 
 %check
 %if 0%{?rhel} >= 8
@@ -549,6 +586,23 @@ chmod go-w %{_localstatedir}/log/%{name}/*.log >/dev/null 2>&1 || :
 %endif
 
 %changelog
+* Fri Apr 22 2022 Desnes Nunes <desnesn@linux.ibm.com> - [28.2-1.1.dn]:
+- beaker: dn: sles: Fix sles versions setup variables (Desnes Nunes)
+- beaker: dn: sles: remove duplicate information on beaker-harness-env.csh (Paul Clarke)
+- beaker: dn: centostream: Introducing centostream support [TEMPORARY] (Desnes Nunes)
+- beaker: dn: sles: Don't check server certificate on installations [TEMPORARY] (Desnes Nunes)
+- beaker: dn: s390x: Add zVM hypervisor and zvm_jst Power type (Desnes Nunes)
+- beaker: dn: sles: Enable SLES beta distro support (Desnes Nunes)
+- beaker: dn: sles: Add Module-Development-Tools repo to SLES installations (Desnes Nunes)
+- beaker: dn: sles: Set system's FQDN on SLES installations (Desnes Nunes)
+- beaker: dn: sles: Fix bug of SLES breaking the disk's boot_string on SMS after install (Desnes Nunes)
+- beaker: dn: sles: Enable SLES15 SP3 support on powerpc (Diego Domingos)
+- beaker: dn: sles: Fix kickstart/autoyast flags setup for sles, fedora and rhel (Desnes Nunes)
+- beaker: dn: sles: Fix missing self.kickstart clause (Diego Domingos)
+- beaker: dn: sles: Introducing SLES support on Beaker (Diego Domingos)
+- beaker: dn: fedora: Don't disable Fedora' external repos (Murilo Opsfelder Araujo)
+- beaker: dn: powerpc: Add PowerVM hypervisor and obmcutil Power type (Murilo Opsfelder Araujo)
+
 * Tue Feb 16 2021 Carol Bouchard <cbouchar@redhat.com> - 28.2-1:
 - new maintenance release 28.2:
   https://beaker-project.org/docs/whats-new/release-28.html#beaker-28-2

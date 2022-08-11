@@ -1,0 +1,41 @@
+From 362708759ba7c134bcd5bc383b147d27f4bc8e76 Mon Sep 17 00:00:00 2001
+From: Desnes Nunes <desnesn@linux.ibm.com>
+Date: Wed, 20 Apr 2022 16:40:39 -0300
+Subject: [PATCH 16/23] beaker: dn: sles: Fix sles versions setup variables
+
+Even though the SLES' Service Pack versions are currently not used to
+tweak the installer like in RHEL, let's fix the variable since its value
+is currently wrong.
+
+Also, let's leave the variables in <unicode> type, as iu on the rhel
+versions.
+
+Fixes: cdf5ea04b3fe ("beaker: dn: sles: Fix kickstart/autoyast flags setup for sles, fedora and rhel")
+Reported-by: Paul Clarke <pc@us.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@linux.ibm.com>
+---
+ Server/bkr/server/model/distrolibrary.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/Server/bkr/server/model/distrolibrary.py b/Server/bkr/server/model/distrolibrary.py
+index 5ca48e856..7cad45a83 100644
+--- a/Server/bkr/server/model/distrolibrary.py
++++ b/Server/bkr/server/model/distrolibrary.py
+@@ -55,11 +55,11 @@ def default_install_options_for_distro(osmajor_name, osminor, variant, arch):
+     if name == 'Fedora':
+         fedora = version
+ 
+-    suse, suse_version = False, False
++    suse, suse_sp = False, False
+     suse_like = ['SUSELinuxEnterprise']
+     if any(distro in name for distro in suse_like):
+-        suse = str((name.split(" ",1)[0]).split("SUSELinuxEnterprise",1)[1])
+-        suse_minor = str(version)
++        suse = (osmajor_name.split(" ",1)[0]).split("SUSELinuxEnterprise",1)[1]
++        suse_sp = version
+ 
+     # We default to assuming all features are present, with features
+     # conditionally turned off if needed. That way, unrecognised custom
+-- 
+2.35.3
+

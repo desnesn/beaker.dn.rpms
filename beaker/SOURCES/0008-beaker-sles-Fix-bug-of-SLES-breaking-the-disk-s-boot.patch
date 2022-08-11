@@ -1,0 +1,34 @@
+From 8641cee14d40e5551f524446fb5dfdcb7a539f72 Mon Sep 17 00:00:00 2001
+From: Desnes Nunes <desnesn@linux.ibm.com>
+Date: Mon, 18 Apr 2022 16:56:52 -0300
+Subject: [PATCH 08/23] beaker: dn: sles: Fix bug of SLES breaking the disk's boot_string on SMS after install
+
+Installation works fine, but SLES installed systems can't be rebooted.
+
+Set the bootlist on the install to avoid this issue.
+
+Fixes: 58e63d1803c0 ("beaker: dn: sles: Introducing SLES support on Beaker")
+Signed-off-by: Diego Domingos <diegodo@linux.vnet.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@br.ibm.com>
+---
+ Server/bkr/server/autoyasts/default | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Server/bkr/server/autoyasts/default b/Server/bkr/server/autoyasts/default
+index 8f59aa5e1..6c3e4fdb5 100644
+--- a/Server/bkr/server/autoyasts/default
++++ b/Server/bkr/server/autoyasts/default
+@@ -314,8 +314,8 @@
+ 				zypper install -y restraint restraint-rhts
+ 				ln -s /bin/bash /usr/bin/bash
+ 				cp /etc/os-release /etc/redhat-release
+-
+-				bootlist -m normal -o eth0 bserver=0.0.0.0 client=0.0.0.0 gateway=0.0.0.0 "$(df / | tail -n1 | cut -d' ' -f 1)"
++				BOOT_DISK="$(df / | tail -n1 | cut -d' ' -f1)"
++				bootlist -m normal -o eth0 bserver=0.0.0.0 client=0.0.0.0 gateway=0.0.0.0 "$(ofpathname ${BOOT_DISK} | cut -d':' -f1)"
+ 
+ 				systemctl daemon-reload
+ 				service restraintd start
+-- 
+2.35.3
+

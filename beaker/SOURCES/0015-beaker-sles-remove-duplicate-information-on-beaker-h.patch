@@ -1,0 +1,32 @@
+From 81a764befb56e61cc256159e2596343bbd79e9f5 Mon Sep 17 00:00:00 2001
+From: Paul Clarke <pc@us.ibm.com>
+Date: Tue, 19 Apr 2022 19:55:30 -0300
+Subject: [PATCH 15/23] beaker: dn: sles: remove duplicate information on beaker-harness-env.csh
+
+Fixes: 58e63d1803c0 ("beaker: dn: sles: Introducing SLES support on Beaker")
+Signed-off-by: Paul Clarke <pc@us.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@linux.ibm.com>
+---
+ Server/bkr/server/autoyasts/default | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/Server/bkr/server/autoyasts/default b/Server/bkr/server/autoyasts/default
+index 6f1b8a8df..f6d1ab189 100644
+--- a/Server/bkr/server/autoyasts/default
++++ b/Server/bkr/server/autoyasts/default
+@@ -227,12 +227,6 @@
+ 							    export BEAKER_RECIPE_ID={{ recipe.id }}
+ 							    export BEAKER_HUB_URL="https://{{ lab_controller.fqdn }}"
+ 							    EOF
+-							    cat <<"EOF" >/etc/profile.d/beaker-harness-env.csh
+-							    setenv BEAKER_LAB_CONTROLLER_URL "http://{{ lab_controller.fqdn }}:8000/"
+-							    setenv BEAKER_LAB_CONTROLLER {{ lab_controller.fqdn }}
+-							    setenv BEAKER_RECIPE_ID {{ recipe.id }}
+-							    setenv BEAKER_HUB_URL "https://{{ lab_controller.fqdn }}"
+-							    EOF
+ 
+ 
+ 							    cat <<"EOF" >/etc/profile.d/beaker.sh
+-- 
+2.35.3
+

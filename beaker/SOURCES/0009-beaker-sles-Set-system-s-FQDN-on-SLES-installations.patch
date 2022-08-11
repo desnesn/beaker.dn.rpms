@@ -1,0 +1,30 @@
+From e616f2476a9e9d639d5ab688a211b7428934fcef Mon Sep 17 00:00:00 2001
+From: Desnes Nunes <desnesn@linux.ibm.com>
+Date: Mon, 18 Apr 2022 19:34:49 -0300
+Subject: [PATCH 09/23] beaker: dn: sles: Set system's FQDN on SLES installations
+
+Use hostnamectl to set FQDN during the SLES installation.
+
+Fixes: 58e63d1803c0 ("beaker: dn: sles: Introducing SLES support on Beaker")
+Requested-by: Tulio Magno Quites Machado Filho <tuliom@linux.vnet.ibm.com>
+Signed-off-by: Diego Domingos <diegodo@linux.vnet.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@br.ibm.com>
+---
+ Server/bkr/server/autoyasts/default | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Server/bkr/server/autoyasts/default b/Server/bkr/server/autoyasts/default
+index 6c3e4fdb5..deea4da50 100644
+--- a/Server/bkr/server/autoyasts/default
++++ b/Server/bkr/server/autoyasts/default
+@@ -316,6 +316,7 @@
+ 				cp /etc/os-release /etc/redhat-release
+ 				BOOT_DISK="$(df / | tail -n1 | cut -d' ' -f1)"
+ 				bootlist -m normal -o eth0 bserver=0.0.0.0 client=0.0.0.0 gateway=0.0.0.0 "$(ofpathname ${BOOT_DISK} | cut -d':' -f1)"
++				hostnamectl --static set-hostname {{ system.fqdn }}
+ 
+ 				systemctl daemon-reload
+ 				service restraintd start
+-- 
+2.35.3
+

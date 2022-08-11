@@ -1,0 +1,111 @@
+From cdf5ea04b3feeab44166a58eb4832f232573ee41 Mon Sep 17 00:00:00 2001
+From: Desnes Nunes <desnesn@linux.ibm.com>
+Date: Mon, 18 Apr 2022 16:45:34 -0300
+Subject: [PATCH 06/23] beaker: dn: sles: Fix kickstart/autoyast flags setup for sles, fedora and rhel
+
+A few changes on the kickstart/autoyast flags are still necessary on the
+scheduler and distrolibrary.
+
+Fixes: 58e63d1803c0 ("beaker: dn: sles: Introducing SLES support on Beaker")
+Signed-off-by: Diego Domingos <diegodo@linux.vnet.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@br.ibm.com>
+---
+ Server/bkr/server/model/distrolibrary.py    | 20 +++++++++++++++-----
+ Server/bkr/server/model/scheduler.py        | 10 ++++------
+ Server/bkr/server/tools/create_kickstart.py |  2 +-
+ 3 files changed, 20 insertions(+), 12 deletions(-)
+
+diff --git a/Server/bkr/server/model/distrolibrary.py b/Server/bkr/server/model/distrolibrary.py
+index 135c64909..5ca48e856 100644
+--- a/Server/bkr/server/model/distrolibrary.py
++++ b/Server/bkr/server/model/distrolibrary.py
+@@ -55,6 +55,12 @@ def default_install_options_for_distro(osmajor_name, osminor, variant, arch):
+     if name == 'Fedora':
+         fedora = version
+ 
++    suse, suse_version = False, False
++    suse_like = ['SUSELinuxEnterprise']
++    if any(distro in name for distro in suse_like):
++        suse = str((name.split(" ",1)[0]).split("SUSELinuxEnterprise",1)[1])
++        suse_minor = str(version)
++
+     # We default to assuming all features are present, with features
+     # conditionally turned off if needed. That way, unrecognised custom
+     # distros will be assumed to support all features. The admin can
+@@ -178,11 +184,12 @@ def default_install_options_for_distro(osmajor_name, osminor, variant, arch):
+     # for s390, s390x and armhfp, we default to ''
+     kernel_options['netbootloader'] = netbootloader.get(arch.arch, '')
+     if arch.arch in ['ppc', 'ppc64', 'ppc64le']:
+-        if rhel and int(rhel) < 9 or \
+-                (fedora and fedora != 'rawhide' and int(fedora) < 34):
+-            kernel_options['leavebootorder'] = None
+-        else:
+-            kernel_options['inst.leavebootorder'] = None
++        if not suse:
++            if rhel and int(rhel) < 9 or \
++                    (fedora and fedora != 'rawhide' and int(fedora) < 34):
++                kernel_options['leavebootorder'] = None
++            else:
++                kernel_options['inst.leavebootorder'] = None
+ 
+     # Keep old kernel options for older distros
+     if rhel and int(rhel) < 9 or \
+@@ -190,6 +197,9 @@ def default_install_options_for_distro(osmajor_name, osminor, variant, arch):
+         kernel_options['ksdevice'] = 'bootif'
+         ks_meta['ks_keyword'] = 'ks'
+ 
++    if suse:
++        ks_meta['auto_installer'] = 'autoyast'
++
+     return InstallOptions(ks_meta, kernel_options, {})
+ 
+ def install_options_for_distro(osmajor_name, osminor, variant, arch):
+diff --git a/Server/bkr/server/model/scheduler.py b/Server/bkr/server/model/scheduler.py
+index 3db79ad95..9ab2b1fab 100644
+--- a/Server/bkr/server/model/scheduler.py
++++ b/Server/bkr/server/model/scheduler.py
+@@ -2652,16 +2652,14 @@ def provision(self):
+         ks_appends = None
+ 
+         # Check the distro and set the auto_installer flag according
+-        if 'SLE' in self.distro_tree.distro.name:
++        if "SUSE" in str(self.distro_tree.distro.osversion.osmajor):
+             auto_installer = "autoyast"
+             install_options.kernel_options['install'] = self.installation.tree_url
+-        else:
+-            auto_installer = "ks"
+ 
+-        if auto_installer in install_options.kernel_options:
++        if ks_keyword in install_options.kernel_options:
+             # Use it as is
+             rendered_kickstart = None
+-        elif 'SLE' in self.distro_tree.distro.name:
++        elif "SUSE" in str(self.distro_tree.distro.osversion.osmajor):
+             kickstart = self.kickstart
+             rendered_kickstart = generate_autoinstall(install_options=install_options,
+                                                     distro_tree=self.distro_tree,
+@@ -2720,7 +2718,7 @@ def provision(self):
+                                                     ks_appends=ks_appends,
+                                                     install_template=kickstart,
+                                                     no_template=no_ks_template)
+-            install_options.kernel_options[auto_installer] = rendered_kickstart.link
++            install_options.kernel_options[ks_keyword] = rendered_kickstart.link
+ 
+         self.installation.kernel_options = install_options.kernel_options_str
+         self.installation.rendered_kickstart = rendered_kickstart
+diff --git a/Server/bkr/server/tools/create_kickstart.py b/Server/bkr/server/tools/create_kickstart.py
+index 38ec0d16e..7dd37fdeb 100644
+--- a/Server/bkr/server/tools/create_kickstart.py
++++ b/Server/bkr/server/tools/create_kickstart.py
+@@ -135,7 +135,7 @@ def main(*args):
+                              distro_tree.variant,
+                              distro_tree.arch,
+                              distro_tree.url_in_lab(lab_controller=system.lab_controller))
+-        rendered_kickstart = generate_kickstart(install_options=install_options,
++        rendered_kickstart = generate_autoinstall(install_options=install_options,
+                                                 distro_tree=distro_tree,
+                                                 installation=installation,
+                                                 system=system,
+-- 
+2.35.3
+

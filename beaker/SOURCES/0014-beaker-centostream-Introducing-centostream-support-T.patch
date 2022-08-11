@@ -1,0 +1,101 @@
+From 226598807cdf02586c504c13f1c0ffb2da7d6fd4 Mon Sep 17 00:00:00 2001
+From: Desnes Nunes <desnesn@linux.ibm.com>
+Date: Mon, 18 Apr 2022 20:37:30 -0300
+Subject: [PATCH 14/23] beaker: dn: centostream: Introducing centostream support [TEMPORARY]
+
+It seems CentOStream is not yet supported on upstream Beaker.
+
+Since we only care about the latest available version of centos8/9, and
+will always import it from an open external repository, this is an ugly
+hard-coded temporary workaround that changes how the repo of the upstream
+CentOS distro is imported. Moreover, this is only called when the distro
+link of the image has an url with the wildcard %centos%, such as:
+
+* http://mirror.centos.org/centos/8-stream
+* http://mirror.stream.centos.org/9-stream
+
+Moreover, soft links to the harness RHEL8, RHEL9 packages are also
+necessary for this workaround:
+
+$ ln -s /var/www/beaker/harness/RedHatEnterpriseLinux8 /var/www/beaker/harness/CentOSStream8
+$ ln -s /var/www/beaker/harness/RedHatEnterpriseLinux9 /var/www/beaker/harness/CentOSStream9
+
+This will be removed in the future.
+
+Signed-off-by: Desnes Nunes <desnesn@br.ibm.com>
+---
+ .../src/bkr/labcontroller/distro_import.py    | 49 ++++++++++++-------
+ 1 file changed, 31 insertions(+), 18 deletions(-)
+
+diff --git a/LabController/src/bkr/labcontroller/distro_import.py b/LabController/src/bkr/labcontroller/distro_import.py
+index 379b74232..32a15a357 100755
+--- a/LabController/src/bkr/labcontroller/distro_import.py
++++ b/LabController/src/bkr/labcontroller/distro_import.py
+@@ -10,7 +10,7 @@
+ import string
+ import ConfigParser
+ import getopt
+-import urlparse
++from urlparse import urlparse, parse_qs
+ from optparse import OptionParser, OptionGroup
+ import urllib2
+ import logging
+@@ -944,25 +944,38 @@ def extend_tree(self):
+         pass
+ 
+     def find_common_repos(self, repo_base, arch):
+-        """
+-        RHEL6 repos
+-        ../../optional/<ARCH>/os/repodata
+-        ../../optional/<ARCH>/debug/repodata
+-        ../debug/repodata
+-        """
+-        repo_paths = [('debuginfo',
+-                       'debug',
+-                       '../debug'),
+-                      ('optional-debuginfo',
+-                       'debug',
+-                       '../../optional/%s/debug' % arch),
+-                      ('optional',
+-                       'optional',
+-                       '../../optional/%s/os' % arch),
+-                     ]
++        if not "centos" in repo_base:
++	    """
++	    RHEL6 repos
++	    ../../optional/<ARCH>/os/repodata
++	    ../../optional/<ARCH>/debug/repodata
++	    ../debug/repodata
++	    """
++	    repo_paths = [('debuginfo',
++	                   'debug',
++	                   '../debug'),
++	                  ('optional-debuginfo',
++	                   'debug',
++	                   '../../optional/%s/debug' % arch),
++	                  ('optional',
++	                   'optional',
++	                   '../../optional/%s/os' % arch),
++	                 ]
++        else:
++            repo_paths = [('BaseOS','variant','../../../BaseOS/%s/os' % arch),
++                          ('AppStream','variant','../../../AppStream/%s/os' % arch),
++                          ('BaseOS-debuginfo','debug','../../../BaseOS/%s/debug/tree' % arch),
++                          ('AppStream-debuginfo','debug','../../../AppStream/%s/debug/tree' % arch)]
++
+         repos = []
+         for repo in repo_paths:
+-            if url_exists(os.path.join(repo_base, repo[2], 'repodata')):
++            url = os.path.join(repo_base, repo[2], 'repodata')
++
++            if "centos" in repo_base:
++                up = urlparse(url)
++                url=up.scheme + '://' + up.netloc + '/' + os.path.abspath(up.path)
++
++            if url_exists(url):
+                 repos.append(dict(
+                                   repoid=repo[0],
+                                   type=repo[1],
+-- 
+2.35.3
+

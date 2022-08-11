@@ -1,0 +1,69 @@
+From 444eb430cbbc7a77b571766beb96be07d8d98b20 Mon Sep 17 00:00:00 2001
+From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Date: Mon, 18 Apr 2022 16:15:14 -0300
+Subject: [PATCH 02/23] beaker: dn: powerpc: Add PowerVM hypervisor and obmcutil Power type
+
+Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@linux.ibm.com>
+---
+ .../bkr/labcontroller/power-scripts/obmcutil  | 23 +++++++++++++++++++
+ Server/bkr/server/tools/init.py               |  6 ++---
+ 2 files changed, 26 insertions(+), 3 deletions(-)
+ create mode 100755 LabController/src/bkr/labcontroller/power-scripts/obmcutil
+
+diff --git a/LabController/src/bkr/labcontroller/power-scripts/obmcutil b/LabController/src/bkr/labcontroller/power-scripts/obmcutil
+new file mode 100755
+index 000000000..f14fcafbe
+--- /dev/null
++++ b/LabController/src/bkr/labcontroller/power-scripts/obmcutil
+@@ -0,0 +1,23 @@
++#!/bin/sh
++# set -e
++
++if [ "$power_mode" == interrupt ] ; then
++    echo "interrupt not supported by obmcutil" >&2
++    exit 1
++fi
++
++/bin/ping -c 1 "$power_address" > /dev/null || ( echo "PING TIME OUT"; exit 1)
++
++# use power_id to pass in additional options
++# old command that worked on mihawk but didn't work on wsp
++# sshpass -p "$power_pass" ssh -o StrictHostKeyChecking=no "$power_user"@"$power_address" obmcutil $power_id  power"$power_mode"
++
++sshpass -p "$power_pass" ssh -o StrictHostKeyChecking=no "$power_user"@"$power_address" "test -f /usr/bin/obmcutil && true"
++
++if [ $? -eq 0 ]; then
++	obm_path=/usr/bin/
++else
++	obm_path=/usr/sbin/
++fi
++
++sshpass -p "$power_pass" ssh -o StrictHostKeyChecking=no "$power_user"@"$power_address" ${obm_path}obmcutil $power_id power"$power_mode"
+diff --git a/Server/bkr/server/tools/init.py b/Server/bkr/server/tools/init.py
+index b3ad99b5c..73cd411ce 100755
+--- a/Server/bkr/server/tools/init.py
++++ b/Server/bkr/server/tools/init.py
+@@ -166,7 +166,7 @@ def populate_db(user_name=None, password=None, user_display_name=None,
+ 
+     # Setup Hypervisors Table
+     if Hypervisor.query.count() == 0:
+-        for h in [u'KVM', u'Xen', u'HyperV', u'VMWare']:
++        for h in [u'KVM', u'Xen', u'HyperV', u'VMWare', u'PowerVM']:
+             session.add(Hypervisor(hypervisor=h))
+ 
+     # Setup kernel_type Table
+@@ -186,8 +186,8 @@ def populate_db(user_name=None, password=None, user_display_name=None,
+     if PowerType.query.count() == 0:
+         for power_type in [u'apc_snmp', u'apc_snmp_then_etherwake',
+                            u'bladecenter', u'bladepap', u'drac', u'ether_wake', u'hyper-v',
+-                           u'ilo', u'integrity', u'ipmilan', u'ipmitool', u'lpar', u'rsa',
+-                           u'virsh', u'wti']:
++                           u'ilo', u'integrity', u'ipmilan', u'ipmitool', u'lpar', u'obmcutil',
++                           u'rsa', u'virsh', u'wti']:
+             session.add(PowerType(power_type))
+ 
+     # Setup key types
+-- 
+2.35.3
+

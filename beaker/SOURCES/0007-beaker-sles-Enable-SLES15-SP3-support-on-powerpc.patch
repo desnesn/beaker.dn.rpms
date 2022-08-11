@@ -1,0 +1,92 @@
+From 62a19e5a450405053db28ef189c641f801ba6390 Mon Sep 17 00:00:00 2001
+From: Diego Domingos <diegodo@linux.vnet.ibm.com>
+Date: Mon, 18 Apr 2022 16:52:21 -0300
+Subject: [PATCH 07/23] beaker: dn: sles: Enable SLES15 SP3 support on powerpc
+
+An update on the default autoyast is necessary to enable SLES15 SP3
+support.
+
+Requested-by: Debora Velarde Babb <debora@linux.ibm.com>
+Signed-off-by: Diego Domingos <diegodo@linux.vnet.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@linux.ibm.com>
+---
+ Server/bkr/server/autoyasts/default | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
+
+diff --git a/Server/bkr/server/autoyasts/default b/Server/bkr/server/autoyasts/default
+index d75eecd4c..8f59aa5e1 100644
+--- a/Server/bkr/server/autoyasts/default
++++ b/Server/bkr/server/autoyasts/default
+@@ -6,7 +6,6 @@
+ 			<script>
+ 				<source>
+ 					<![CDATA[
+-						set -x
+ 						# Some distros have curl in their minimal install set, others have wget.
+ 						# We define a wrapper function around the best available implementation
+ 						# so that the rest of the script can use that for making HTTP requests.
+@@ -93,8 +92,6 @@
+ 			<script>
+ 				<source>
+ 					<![CDATA[
+-						set -x
+-						#exit 0
+ 						# Some distros have curl in their minimal install set, others have wget.
+ 						# We define a wrapper function around the best available implementation
+ 						# so that the rest of the script can use that for making HTTP requests.
+@@ -276,8 +273,6 @@
+ 	<script>
+ 		<source>
+ 			<![CDATA[
+-				set -x
+-				#exit 0
+ 				# Some distros have curl in their minimal install set, others have wget.
+ 				# We define a wrapper function around the best available implementation
+ 				# so that the rest of the script can use that for making HTTP requests.
+@@ -881,17 +876,17 @@
+     </errors>
+     <messages>
+       <log config:type="boolean">true</log>
+-      <show config:type="boolean">true</show>
++      <show config:type="boolean">false</show>
+       <timeout config:type="integer">0</timeout>
+     </messages>
+     <warnings>
+       <log config:type="boolean">true</log>
+-      <show config:type="boolean">true</show>
++      <show config:type="boolean">false</show>
+       <timeout config:type="integer">0</timeout>
+     </warnings>
+     <yesno_messages>
+       <log config:type="boolean">true</log>
+-      <show config:type="boolean">true</show>
++      <show config:type="boolean">false</show>
+       <timeout config:type="integer">0</timeout>
+     </yesno_messages>
+   </report>
+@@ -925,9 +920,7 @@
+     </services>
+   </services-manager>
+   <software>
+-    <image/>
+     <install_recommended config:type="boolean">true</install_recommended>
+-    <instsource/>
+     <packages config:type="list">
+       <package>autoyast2-installation</package>
+       <package>autoyast2</package>
+@@ -949,10 +942,10 @@
+       <package>btrfsprogs</package>
+ 			<package>tcpdump</package>
+     </packages>
+-    <patterns config:type="list">
++    <!--<patterns config:type="list">
+       <pattern>base</pattern>
+       <pattern>minimal_base</pattern>
+-    </patterns>
++    </patterns>-->
+     <products config:type="list">
+       <product>SLES</product>
+     </products>
+-- 
+2.35.3
+

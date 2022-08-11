@@ -1,0 +1,27 @@
+From 261ec6887dc78af72fdedb963b81c7d87dcc0b22 Mon Sep 17 00:00:00 2001
+From: Desnes Nunes <desnesn@linux.ibm.com>
+Date: Mon, 18 Apr 2022 19:38:55 -0300
+Subject: [PATCH 10/23] beaker: dn: sles: Add Module-Development-Tools repo to SLES installations
+
+Requested-by: Luciano Chaves <chavez@us.ibm.com>
+Signed-off-by: Diego Domingos <diegodo@linux.vnet.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@br.ibm.com>
+---
+ Server/bkr/server/autoyasts/default | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Server/bkr/server/autoyasts/default b/Server/bkr/server/autoyasts/default
+index deea4da50..e0bfabd17 100644
+--- a/Server/bkr/server/autoyasts/default
++++ b/Server/bkr/server/autoyasts/default
+@@ -308,6 +308,7 @@
+ 				zypper addrepo -G {{ absolute_url('/', labdomain=True).replace("https","http") }}repos/{{ recipe.id }} beaker-tasks
+ 				zypper addrepo -G "{{ absolute_url('/', labdomain=True).replace("https","http") }}harness/{{ distro.osversion.osmajor }}" harness
+ 				zypper addrepo -G http://{{ lab_controller.fqdn }}/sles_images/{{ distro_tree.distro.name }}/Module-Python2 module-python2
++				zypper addrepo -G http://{{ lab_controller.fqdn }}/sles_images/{{ distro_tree.distro.name }}/Module-Development-Tools module-development-tools
+ 				zypper refresh
+ 
+ 				zypper install -y selinux-tools make gcc libsoup libarchive13 python-pyOpenSSL
+-- 
+2.35.3
+

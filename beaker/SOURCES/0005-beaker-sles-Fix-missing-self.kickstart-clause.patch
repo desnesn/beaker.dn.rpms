@@ -1,0 +1,31 @@
+From 7618a4ca0c3c7e89cd7607314fff721d882385b3 Mon Sep 17 00:00:00 2001
+From: Diego Domingos <diegodo@linux.vnet.ibm.com>
+Date: Mon, 18 Apr 2022 16:32:09 -0300
+Subject: [PATCH 05/23] beaker: dn: sles: Fix missing self.kickstart clause
+
+This commit fixes a missing clause during provision on the beaker
+scheduler which removed during the sles bringup
+
+Fixes: 58e63d1803c0 ("beaker: dn: sles: Introducing SLES support on Beaker")
+Signed-off-by: Diego Domingos <diegodo@linux.vnet.ibm.com>
+Signed-off-by: Desnes Nunes <desnesn@linux.ibm.com>
+---
+ Server/bkr/server/model/scheduler.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Server/bkr/server/model/scheduler.py b/Server/bkr/server/model/scheduler.py
+index cfb92b2d9..3db79ad95 100644
+--- a/Server/bkr/server/model/scheduler.py
++++ b/Server/bkr/server/model/scheduler.py
+@@ -2673,7 +2673,7 @@ def provision(self):
+                                                     no_template=no_ks_template)
+             install_options.kernel_options[auto_installer] = rendered_kickstart.link
+         else:
+-            if not no_ks_template:
++            if self.kickstart and not no_ks_template:
+                 # add in cobbler packages snippet...
+                 packages_slot = 0
+                 nopackages = True
+-- 
+2.35.3
+
