@@ -19,7 +19,7 @@
 
 Name:           beaker
 Version:        28.2
-%define dn_release .2.dn
+%define dn_release .3.dn
 Release:        1%{?dn_release}%{?dist}
 Summary:        Full-stack software and hardware integration testing system
 Group:          Applications/Internet
@@ -65,6 +65,7 @@ Patch17: 0017-beaker-ubuntu-Add-Ubuntu-support.patch
 Patch18: 0018-beaker-ubuntu-Quote-kernel-arguments-in-grub.conf.patch
 Patch19: 0019-beaker-ubuntu-use-personal-logins-passwords-on-Ubunt.patch
 Patch20: 0020-beaker-ubuntu-adapt-test_netboot.py-to-ubuntu-s-semi.patch
+Patch21: 0021-beaker-ubuntu-fix-harness-address-and-download-CA-cr.patch
 
 BuildArch:      noarch
 BuildRequires:  make
@@ -374,6 +375,7 @@ tar -C Server/assets/moment-duration-format --strip-components=1 -xzf %{SOURCE15
 %patch18 -p1
 %patch19 -p1
 %patch20 -p1
+%patch21 -p1
 
 %build
 export BKR_PY3=%{with python3}
@@ -598,6 +600,10 @@ chmod go-w %{_localstatedir}/log/%{name}/*.log >/dev/null 2>&1 || :
 %endif
 
 %changelog
+
+* Wed May 18 2022 Desnes Nunes <desnesn@linux.ibm.com> - [28.2-1.3.dn]:
+- beaker: dn: ubuntu: fix harness address and download CA crt (Desnes Nunes)
+
 * Mon May 09 2022 Desnes Nunes <desnesn@linux.ibm.com> - [28.2-1.2.dn]:
 - beaker: dn: ubuntu: adapt test_netboot.py to ubuntu's semicolon kernel options (Desnes Nunes)
 - beaker: dn: ubuntu: use personal logins/passwords on Ubuntu installs (Desnes Nunes)
