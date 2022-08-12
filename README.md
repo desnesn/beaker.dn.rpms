@@ -53,7 +53,7 @@ $ ln -s /var/www/beaker/harness/SUSELinuxEnterprise15/ /var/www/beaker/harness/S
 
 #### 1.2) SLES - CONTROLLER SETUP
 
-SLES distros were setup on the folder /var/www/sles_images/ at the controller, thus, on on the config file /etc/httpd/conf.d/beaker-lab-controller.conf :
+SLES distros were setup on the folder /var/www/sles_images/ at the controller, thus, on the config file /etc/httpd/conf.d/beaker-lab-controller.conf :
 
 ~~~
 ...
@@ -65,7 +65,7 @@ Alias /sles_images /data/www/sles_images
 
 #### 1.3) SLES - DISTRO IMPORT
  
-Beaker is able to import sles distro normally (just not the date) due to SLES' .treeinfo, thus, this is enough to start at this moment:
+Beaker is able to import sles distro normally (just not the date) due to SLES' .treeinfo, thus, this is enough at this moment:
 
 ~~~
 # Import SLES-15 SP2 on ppc64le
@@ -103,7 +103,7 @@ RewriteCond %{REQUEST_URI} !^/autoinstall/.* [NC]
 ...
 ~~~
 
-Also, for ubuntu install on ppc64le baremetals systems (with petiboot), it also needs to receive the company's CA crt in the install, in order to validate the URL of fetched files (such as vmlinux and initrd), thus, also on /etc/httpd/conf.d/beaker-server.conf:
+Also, for ubuntu install on ppc64le baremetals systems (which are booted with petiboot), the system also needs to have the company's CA crt during the install, in order to validate the URL of fetched files (such as vmlinux and initrd), thus, also on /etc/httpd/conf.d/beaker-server.conf:
 ~~~
 ...
 RewriteCond %{REQUEST_URI} !^/certs/.* [NC]
@@ -128,7 +128,7 @@ $ ln -s /var/www/beaker/harness/Ubuntu-Server20/ /var/www/beaker/harness/Ubuntu-
 
 #### 2.2) UBUNTU - CONTROLLER SETUP
 
-Ubuntu distros were setup on the folder /var/www/ubuntu_images/ at the controller, thus, on on the config file /etc/httpd/conf.d/beaker-lab-controller.conf :
+Ubuntu distros were setup on the folder /var/www/ubuntu_images/ at the controller, thus, on the config file /etc/httpd/conf.d/beaker-lab-controller.conf :
 
 ~~~
 ...
@@ -148,8 +148,6 @@ UBU_URL="https://cdimage.ubuntu.com/releases"
 #        https://cdimage.ubuntu.com/releases/22.04/beta/ubuntu-22.04-beta-live-server-ppc64el.iso
 
 ...
-
-# wget your ubuntu iso
 
 # Import UBUNTU-22.04 on ppc64le
 NAME="UBUNTU"
@@ -190,7 +188,7 @@ MAJOR="$(awk -F' ' '{print $2}' /data/www/ubuntu_images/$VERSION/.disk/info | aw
 VMLINUX=$(find /data/www/ubuntu_images/$VERSION/ -name vmlinu* -printf '%P\n')
 INITRD=$(find /data/www/ubuntu_images/$VERSION/ -name initrd* -printf '%P\n')
 
-beaker-import --family=Ubuntu-Server --version=$VERSION --name $NAME-$VERSION-$DATE-$RELEASE --arch=$ARCH --kernel=./$VMLINUX --initrd=./$INITRD http://$(hostname --fqdn)/ubuntu_images/$VERSION/
+beaker-import --family=$FAMILY --version=$VERSION --name $NAME-$VERSION-$DATE-$RELEASE --arch=$ARCH --kernel=./$VMLINUX --initrd=./$INITRD http://$(hostname --fqdn)/ubuntu_images/$VERSION/
 ~~~
 
 #### 2.4) UBUNTU SYSTEM SETUP
@@ -201,7 +199,7 @@ hostname=<FQDN> console=hvc0 ip=dhcp
 
 ## 3) FEDORA
 
-Here, we use Fedora repos only to install, thus all installs with Fedora get the upstream fedora repos.
+Here, we use Fedora repos only to install, thus all installs with Fedora will have the upstream fedora repos set.
 
 ## 4) CENTOS
 
@@ -211,10 +209,11 @@ Since Red Hat didn't provide CentoStream support on upstream Beaker yet, we did 
 
 Moreover, since we only care about the latest available version of CentoStream8/CentoStream9, we import directly from the following repos:
 
-URL="http://mirror.centos.org/centos/8-stream"
-URL="http://mirror.stream.centos.org/9-stream"
+* URL="http://mirror.centos.org/centos/8-stream"
+* URL="http://mirror.stream.centos.org/9-stream"
 
-If you try to import a centostream distro from another repo that contains *centos* in its URL, it won't work.
+***If you try to import a centostream distro from another repo that contains *centos* in its URL, this will probably break!***
+See https://github.com/desnesn/beaker.dn/commit/0e7dd615193270290cb247250934c76604454701
 
 Also, be sure to use the same harness packages of RHEL8/RHEL9:
 
@@ -225,9 +224,16 @@ ln -s /var/www/beaker/harness/RedHatEnterpriseLinux9 /var/www/beaker/harness/Cen
 
 #### 4.2) BEAKER - CONTROLLER SETUP
 
+CentoStream8:
+
 ~~~
 beaker-import --ignore-missing-tree-compose -n CENTOS-8-STREAM $URL/BaseOS/ppc64le/os
 beaker-import --ignore-missing-tree-compose -n CENTOS-8-STREAM $URL/BaseOS/x86_64/os
+~~~
+
+CentoStream9:
+
+~~~
 beaker-import --ignore-missing-tree-compose -n CENTOS-9-STREAM $URL/BaseOS/ppc64le/os
 beaker-import --ignore-missing-tree-compose -n CENTOS-9-STREAM $URL/BaseOS/x86_64/os
 ~~~
