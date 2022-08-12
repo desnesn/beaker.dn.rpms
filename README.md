@@ -1,6 +1,9 @@
 # **DN's downstream of Beaker RPMS**
 
-Repo to track DN's downstream rebuilds of beaker packages.
+Repo to track DN's downstream rebuilds of beaker rpms.
+
+Fedora COPR repository with beaker.dn binaries:
+* TODO
 
 Beaker DN's code repository:
 * https://github.com/desnesn/beaker.dn
@@ -17,15 +20,15 @@ The Beaker dn branch is a fork on top of upstream Beaker that add these main fea
 * Provides a very ugly hack to enable CentosStream8/9 from a remote repository (temporary).
 ~~~
 
-Even though it works fairly really well and has been extremely helpful to our daily development providing automatic installations and reservations, **there isn't no guarantees whatsoever of this tweaked usage**; since it didn't go through as much testing as the real upstream Beaker -> Enjoy and use it at your own risk!
+Even though beaker.dn works fairly really well, as has been **extremely** helpful to our daily development by providing automatic installations and reservations, **there isn't no guarantees whatsoever of this tweaked usage**; since it didn't go through as much testing as the real upstream Beaker -> Enjoy and use it at your own risk!
 
-Furthermore, we have used only for ppc64le guests, so feel free to contribute back to this fork with patches changing the autoyasts (SLES) and (autoinstall) Ubuntu to support other arches, as well as new harness packages to support newer versions of these distros.
+Furthermore, we have mostly used only for ppc64le guests on this; hence, feel free to contribute back to this fork with patches changing the autoyasts (SLES) and (autoinstall) Ubuntu to support other arches, as well as new harness packages to support newer versions of these distros.
 
-# = SLES SETUP INSTRUCTIONS =
+# 1) SLES SETUP INSTRUCTIONS
 
-## == SLES - SERVER SETUP ==
+## 1.1) SLES - SERVER SETUP
 
-1. The following changes need to be performed on the config file /etc/httpd/conf.d/beaker-server.conf :
+The following changes need to be performed on the config file /etc/httpd/conf.d/beaker-server.conf :
 ~~~
 ...
 RewriteCond %{REQUEST_URI} !^/sles_images/.* [NC]
@@ -33,7 +36,7 @@ RewriteCond %{REQUEST_URI} !^/harness/.* [NC]
 ...
 ~~~
 
-2. Moreover, we created the first versions of the ported SLES harness packages. The Beaker sys. admin needs to fetch the SUSELinuxEnterprise15_SP2.tar.gz:
+Moreover, we created the first versions of the ported SLES harness packages. The Beaker sys. admin needs to fetch the SUSELinuxEnterprise15_SP2.tar.gz:
 
 ~~~
 $ mkdir -p /var/www/beaker/harness/SUSELinuxEnterprise15/
@@ -48,9 +51,9 @@ $ ln -s /var/www/beaker/harness/SUSELinuxEnterprise15/ /var/www/beaker/harness/S
 $ ln -s /var/www/beaker/harness/SUSELinuxEnterprise15/ /var/www/beaker/harness/SUSELinuxEnterprise15/SUSELinuxEnterprise15\ SP4
 ~~~
 
-## == SLES - CONTROLLER SETUP ==
+## 1.2) SLES - CONTROLLER SETUP
 
-3. SLES distros were setup on the folder /var/www/sles_images/ at the controller, thus, on on the config file /etc/httpd/conf.d/beaker-lab-controller.conf :
+SLES distros were setup on the folder /var/www/sles_images/ at the controller, thus, on on the config file /etc/httpd/conf.d/beaker-lab-controller.conf :
 
 ~~~
 ...
@@ -60,9 +63,9 @@ Alias /sles_images /data/www/sles_images
 ...
 ~~~
 
-## == SLES - DISTRO IMPORT ==
+## 1.3) SLES - DISTRO IMPORT
  
-4. Beaker is able to import sles distro normally (just not the date) due to SLES' .treeinfo, thus, this is enough to start at this moment:
+Beaker is able to import sles distro normally (just not the date) due to SLES' .treeinfo, thus, this is enough to start at this moment:
 
 ~~~
 # Import SLES-15 SP2 on ppc64le
@@ -88,13 +91,11 @@ MAJOR=$(echo $VERSION | awk -F' ' '{print $1}')
 beaker-import -n $NAME http://$(hostname --fqdn)/sles_images/$RELEASE/
 ~~~
 
+# 2) UBUNTU SETUP INSTRUCTIONS
 
+## 2.1) UBUNTU - SERVER SETUP
 
-# = UBUNTU SETUP INSTRUCTIONS =
-
-## == UBUNTU - SERVER SETUP ==
-
-1. The following changes need to be performed on the config file /etc/httpd/conf.d/beaker-server.conf :
+The following changes need to be performed on the config file /etc/httpd/conf.d/beaker-server.conf :
 ~~~
 ...
 RewriteCond %{REQUEST_URI} !^/ubuntu_images/.* [NC]
@@ -112,7 +113,7 @@ RewriteCond %{REQUEST_URI} !^/certs/.* [NC]
 And of course, scp your company CA to /var/www/certs/.
 
 
-2. Moreover, we created the first versions of the ported Ubuntu 20 harness packages. The Beaker sys. admin needs to fetch the SUSELinuxEnterprise15_SP2.tar.gz:
+Moreover, we created the first versions of the ported Ubuntu 20 harness packages. The Beaker sys. admin needs to fetch the SUSELinuxEnterprise15_SP2.tar.gz:
 
 ~~~
 mkdir -p /var/www/beaker/harness/Ubuntu-Server20/
@@ -125,9 +126,9 @@ And as of this moment, we are also using the same packages on 22.04 thus just ad
 $ ln -s /var/www/beaker/harness/Ubuntu-Server20/ /var/www/beaker/harness/Ubuntu-Server22
 ~~~
 
-## == UBUNTU - CONTROLLER SETUP ==
+## 2.2) UBUNTU - CONTROLLER SETUP
 
-3. Ubuntu distros were setup on the folder /var/www/ubuntu_images/ at the controller, thus, on on the config file /etc/httpd/conf.d/beaker-lab-controller.conf :
+Ubuntu distros were setup on the folder /var/www/ubuntu_images/ at the controller, thus, on on the config file /etc/httpd/conf.d/beaker-lab-controller.conf :
 
 ~~~
 ...
@@ -137,9 +138,9 @@ Alias /ubuntu_images /data/www/ubuntu_images
 ...
 ~~~
 
-## == UBUNTU - DISTRO IMPORT ==
+## 2.3) UBUNTU - DISTRO IMPORT
  
-4. Beaker is not able to import Ubuntu distro directly, thus we need to use a naked install:
+Beaker is not able to import Ubuntu distro directly, thus we need to use a naked install:
 
 ~~~
 UBU_URL="https://cdimage.ubuntu.com/releases"
@@ -192,23 +193,19 @@ INITRD=$(find /data/www/ubuntu_images/$VERSION/ -name initrd* -printf '%P\n')
 beaker-import --family=Ubuntu-Server --version=$VERSION --name $NAME-$VERSION-$DATE-$RELEASE --arch=$ARCH --kernel=./$VMLINUX --initrd=./$INITRD http://$(hostname --fqdn)/ubuntu_images/$VERSION/
 ~~~
 
-## == SYSTEM SETUP ==
+## 2.4) UBUNTU SYSTEM SETUP
 On the system, at the install options tab, edit the kernel option and add the following options:
 ~~~
 hostname=<FQDN> console=hvc0 ip=dhcp
 ~~~
 
-
-
-# = FEDORA =
+# 3) FEDORA
 
 Here, we use Fedora repos only to install, thus all installs with Fedora get the upstream fedora repos.
 
+# 4) CENTOS
 
-
-# = CENTOS =
-
-## == CENTOS - SERVER SETUP ==
+## 4.1) CENTOS - SERVER SETUP
 
 Since Red Hat didn't provide CentoStream support on upstream Beaker yet, we did an ugly hack that will be reverted when the official support comes out.
 
@@ -226,7 +223,7 @@ ln -s /var/www/beaker/harness/RedHatEnterpriseLinux8 /var/www/beaker/harness/Cen
 ln -s /var/www/beaker/harness/RedHatEnterpriseLinux9 /var/www/beaker/harness/CentOSStream9
 ~~~
 
-## == BEAKER - CONTROLLER SETUP ==
+## 4.2) BEAKER - CONTROLLER SETUP
 
 ~~~
 beaker-import --ignore-missing-tree-compose -n CENTOS-8-STREAM $URL/BaseOS/ppc64le/os
