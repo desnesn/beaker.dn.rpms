@@ -91,6 +91,14 @@ MAJOR=$(echo $VERSION | awk -F' ' '{print $1}')
 beaker-import -n $NAME http://$(hostname --fqdn)/sles_images/$RELEASE/
 ~~~
 
+If your SLES distro is non GA, change the README file (or else, the user has to press ENTER for the non GA disclaimer during install):
+
+~~~
+if [[ -f /data/www/sles_images/$RELEASE/README.BETA ]]; then
+	mv /data/www/sles_images/$RELEASE/README.BETA /data/www/sles_images/$RELEASE/NON-README.BETA
+fi
+~~~
+
 ## 2) UBUNTU SETUP INSTRUCTIONS
 
 #### 2.1) UBUNTU - SERVER SETUP
@@ -213,7 +221,9 @@ Moreover, since we only care about the latest available version of CentoStream8/
 * URL="http://mirror.stream.centos.org/9-stream"
 
 ***If you try to import a centostream distro from another repo that contains *centos* in its URL, this will probably break!***
-See https://github.com/desnesn/beaker.dn/commit/0e7dd615193270290cb247250934c76604454701
+
+See:
+* https://github.com/desnesn/beaker.dn/commit/0e7dd615193270290cb247250934c76604454701
 
 Also, be sure to use the same harness packages of RHEL8/RHEL9:
 
