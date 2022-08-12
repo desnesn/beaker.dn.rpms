@@ -3,7 +3,12 @@
 Repo to track DN's downstream rebuilds of beaker rpms.
 
 Fedora COPR repository with beaker.dn binaries:
-* TODO
+* https://copr.fedorainfracloud.org/coprs/desnesn/beaker.dn/
+
+Quick enable:
+~~~
+dnf copr enable desnesn/beaker.dn
+~~~
 
 Beaker DN's code repository:
 * https://github.com/desnesn/beaker.dn
