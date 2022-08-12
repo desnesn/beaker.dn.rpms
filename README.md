@@ -252,3 +252,32 @@ CentoStream9:
 beaker-import --ignore-missing-tree-compose -n CENTOS-9-STREAM $URL/BaseOS/ppc64le/os
 beaker-import --ignore-missing-tree-compose -n CENTOS-9-STREAM $URL/BaseOS/x86_64/os
 ~~~
+
+## Thanks \o/
+
+Hiper huge thanks for patches, debugging, tips and suggestions:
+~~~
+Andrew Lemay
+Brian Jacobs
+Debora Babb
+Diego Pereira Domingos
+Frank Novak
+Gery Schneider
+Gustavo Luiz Duarte
+Jeff Bastian
+Jeffrey Worthey
+Klaus Heinrich Kiwi
+Leonardo Augusto Guimaraes Garcia
+Luciano Chaves
+Matheus Castanho
+Michael Ellerman
+Murilo Opsfelder Araujo
+Murilo Fossa Vicentini
+Nathan Lynch
+Nick Child
+Paul A. Clarke
+Paulo Henrique Nobrega Tavares
+Renata Andrade Matos Ravanelli
+Rod Groce
+Tulio Magno Quites Machado Filho
+~~~
