@@ -5,11 +5,6 @@ Repo to track DN's downstream rebuilds of beaker rpms.
 Fedora COPR repository with beaker.dn binaries:
 * https://copr.fedorainfracloud.org/coprs/desnesn/beaker.dn/
 
-Quick enable:
-~~~
-dnf copr enable desnesn/beaker.dn
-~~~
-
 Beaker DN's code repository:
 * https://github.com/desnesn/beaker.dn
 
@@ -28,6 +23,15 @@ The Beaker dn branch is a fork on top of upstream Beaker that add these main fea
 Even though beaker.dn works fairly really well, as has been **extremely** helpful to our daily development by providing automatic installations and reservations, **there isn't no guarantees whatsoever of this tweaked usage**; since it didn't go through as much testing as the real upstream Beaker -> Enjoy and use it at your own risk!
 
 Furthermore, we have mostly used only for ppc64le guests on this; hence, feel free to contribute back to this fork with patches changing the autoyasts (SLES) and (autoinstall) Ubuntu to support other arches, as well as new harness packages to support newer versions of these distros.
+
+## 0) UPDATE YOUR BEAKER PACKAGES
+~~~
+dnf copr enable desnesn/beaker.dn
+~~~
+
+Also, use the nodejs-less version provided here. See:
+* https://github.com/beaker-project/beaker-project.org/issues/38  
+* https://github.com/desnesn/beaker.dn.rpms/blob/main/nodejs-less/SOURCES/0002-lessc-util.print-has-been-deprecated.v2.patch
 
 ## 1) SLES SETUP INSTRUCTIONS
 
