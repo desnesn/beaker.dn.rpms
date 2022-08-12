@@ -24,9 +24,9 @@ Even though beaker.dn works fairly really well, as has been **extremely** helpfu
 
 Furthermore, we have mostly used only for ppc64le guests on this; hence, feel free to contribute back to this fork with patches changing the autoyasts (SLES) and (autoinstall) Ubuntu to support other arches, as well as new harness packages to support newer versions of these distros.
 
-# 1) SLES SETUP INSTRUCTIONS
+## 1) SLES SETUP INSTRUCTIONS
 
-## 1.1) SLES - SERVER SETUP
+#### 1.1) SLES - SERVER SETUP
 
 The following changes need to be performed on the config file /etc/httpd/conf.d/beaker-server.conf :
 ~~~
@@ -51,7 +51,7 @@ $ ln -s /var/www/beaker/harness/SUSELinuxEnterprise15/ /var/www/beaker/harness/S
 $ ln -s /var/www/beaker/harness/SUSELinuxEnterprise15/ /var/www/beaker/harness/SUSELinuxEnterprise15/SUSELinuxEnterprise15\ SP4
 ~~~
 
-## 1.2) SLES - CONTROLLER SETUP
+#### 1.2) SLES - CONTROLLER SETUP
 
 SLES distros were setup on the folder /var/www/sles_images/ at the controller, thus, on on the config file /etc/httpd/conf.d/beaker-lab-controller.conf :
 
@@ -63,7 +63,7 @@ Alias /sles_images /data/www/sles_images
 ...
 ~~~
 
-## 1.3) SLES - DISTRO IMPORT
+#### 1.3) SLES - DISTRO IMPORT
  
 Beaker is able to import sles distro normally (just not the date) due to SLES' .treeinfo, thus, this is enough to start at this moment:
 
@@ -91,9 +91,9 @@ MAJOR=$(echo $VERSION | awk -F' ' '{print $1}')
 beaker-import -n $NAME http://$(hostname --fqdn)/sles_images/$RELEASE/
 ~~~
 
-# 2) UBUNTU SETUP INSTRUCTIONS
+## 2) UBUNTU SETUP INSTRUCTIONS
 
-## 2.1) UBUNTU - SERVER SETUP
+#### 2.1) UBUNTU - SERVER SETUP
 
 The following changes need to be performed on the config file /etc/httpd/conf.d/beaker-server.conf :
 ~~~
@@ -113,7 +113,7 @@ RewriteCond %{REQUEST_URI} !^/certs/.* [NC]
 And of course, scp your company CA to /var/www/certs/.
 
 
-Moreover, we created the first versions of the ported Ubuntu 20 harness packages. The Beaker sys. admin needs to fetch the SUSELinuxEnterprise15_SP2.tar.gz:
+Moreover, we created the first versions of the ported Ubuntu 20 harness packages. The Beaker sys. admin needs to fetch the Ubuntu-Server20.tar.gz:
 
 ~~~
 mkdir -p /var/www/beaker/harness/Ubuntu-Server20/
@@ -126,7 +126,7 @@ And as of this moment, we are also using the same packages on 22.04 thus just ad
 $ ln -s /var/www/beaker/harness/Ubuntu-Server20/ /var/www/beaker/harness/Ubuntu-Server22
 ~~~
 
-## 2.2) UBUNTU - CONTROLLER SETUP
+#### 2.2) UBUNTU - CONTROLLER SETUP
 
 Ubuntu distros were setup on the folder /var/www/ubuntu_images/ at the controller, thus, on on the config file /etc/httpd/conf.d/beaker-lab-controller.conf :
 
@@ -138,7 +138,7 @@ Alias /ubuntu_images /data/www/ubuntu_images
 ...
 ~~~
 
-## 2.3) UBUNTU - DISTRO IMPORT
+#### 2.3) UBUNTU - DISTRO IMPORT
  
 Beaker is not able to import Ubuntu distro directly, thus we need to use a naked install:
 
@@ -193,19 +193,19 @@ INITRD=$(find /data/www/ubuntu_images/$VERSION/ -name initrd* -printf '%P\n')
 beaker-import --family=Ubuntu-Server --version=$VERSION --name $NAME-$VERSION-$DATE-$RELEASE --arch=$ARCH --kernel=./$VMLINUX --initrd=./$INITRD http://$(hostname --fqdn)/ubuntu_images/$VERSION/
 ~~~
 
-## 2.4) UBUNTU SYSTEM SETUP
+#### 2.4) UBUNTU SYSTEM SETUP
 On the system, at the install options tab, edit the kernel option and add the following options:
 ~~~
 hostname=<FQDN> console=hvc0 ip=dhcp
 ~~~
 
-# 3) FEDORA
+## 3) FEDORA
 
 Here, we use Fedora repos only to install, thus all installs with Fedora get the upstream fedora repos.
 
-# 4) CENTOS
+## 4) CENTOS
 
-## 4.1) CENTOS - SERVER SETUP
+#### 4.1) CENTOS - SERVER SETUP
 
 Since Red Hat didn't provide CentoStream support on upstream Beaker yet, we did an ugly hack that will be reverted when the official support comes out.
 
@@ -223,7 +223,7 @@ ln -s /var/www/beaker/harness/RedHatEnterpriseLinux8 /var/www/beaker/harness/Cen
 ln -s /var/www/beaker/harness/RedHatEnterpriseLinux9 /var/www/beaker/harness/CentOSStream9
 ~~~
 
-## 4.2) BEAKER - CONTROLLER SETUP
+#### 4.2) BEAKER - CONTROLLER SETUP
 
 ~~~
 beaker-import --ignore-missing-tree-compose -n CENTOS-8-STREAM $URL/BaseOS/ppc64le/os
